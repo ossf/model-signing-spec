@@ -56,7 +56,7 @@ Model signing is not:
 * A mechanism to prevent all forms of model misuse: While signing can help establish accountability, it cannot prevent authorized users from employing models in ways that violate guidelines or ethics. Additional governance frameworks and usage policies are necessary to address misuse concerns.
 * A substitute for proper access controls: Signatures verify authenticity but do not restrict who can access or use models. Organizations must implement appropriate authentication and authorization systems to control who can deploy or interact with ML models.
 * A source of build provenance information: OMS signatures verify model integrity and authenticity but do not contain information about the build process, dependencies, or how the model was created. SLSA provenance attestations provide verifiable claims about the build process and creation steps.
-* A mechanism for tracking model lineage: OMS signatures are independent per model and do not capture relationships between models (such as fine-tuning, quantization, or distillation). AI Software Bills of Materials (SBOMs) represent lineage through relationships like DESCENDANT_OF and ANCESTOR_OF.
+* A mechanism for tracking model lineage: OMS signatures are independent per model and do not capture relationships between models (such as fine-tuning, quantization, or distillation). AI Software Bills of Materials (SBOMs) represent lineage through relationships like `DESCENDANT_OF` and `ANCESTOR_OF` (SPDX) and `pedigree` (CycloneDX).
 
 #### Why Should You Use Model Signing?
 
