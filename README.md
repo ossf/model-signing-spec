@@ -41,9 +41,8 @@ Model signing uses cryptographic keys to ensure the integrity and authenticity o
 Model signing creates a tamper-evident seal that enables downstream consumers to verify:
 1. **Integrity**: The model files have not been modified since signing.
 2. **Authenticity**: The model was created by the claimed organization or individual.
-3. **Provenance**: The complete lineage of the model
-4. **Compliance**: Adherence to regulatory and organizational requirements through verifiable metadata.
-5. **Accountability**: Clear attribution of responsibility for model development and distribution.
+3. **Compliance**: Adherence to regulatory and organizational requirements through verifiable metadata.
+4. **Accountability**: Clear attribution of responsibility for model development and distribution.
 
 By signing model artifacts, organizations can establish trust and accountability throughout the ML supply chain, from initial development to deployment and beyond. This becomes increasingly critical as models are shared, modified, and incorporated into various applications across organizational boundaries.
 
@@ -56,6 +55,8 @@ Model signing is not:
 * A comprehensive security solution on its own: Model signing addresses specific supply chain security concerns but must be part of a broader security strategy including secure deployment, runtime monitoring, access controls, and vulnerability management to provide comprehensive protection.
 * A mechanism to prevent all forms of model misuse: While signing can help establish accountability, it cannot prevent authorized users from employing models in ways that violate guidelines or ethics. Additional governance frameworks and usage policies are necessary to address misuse concerns.
 * A substitute for proper access controls: Signatures verify authenticity but do not restrict who can access or use models. Organizations must implement appropriate authentication and authorization systems to control who can deploy or interact with ML models.
+* A source of build provenance information: OMS signatures verify model integrity and authenticity but do not contain information about the build process, dependencies, or how the model was created. SLSA provenance attestations provide verifiable claims about the build process and creation steps.
+* A mechanism for tracking model lineage: OMS signatures are independent per model and do not capture relationships between models (such as fine-tuning, quantization, or distillation). AI Software Bills of Materials (SBOMs) represent lineage through relationships like `DESCENDANT_OF` and `ANCESTOR_OF` (SPDX) and `pedigree` (CycloneDX).
 
 #### Why Should You Use Model Signing?
 
@@ -63,8 +64,6 @@ Model signing is critical for:
 
 * **Supply Chain Security**: Mitigates risks like model tampering, poisoned datasets, and unauthorized modifications.
 * **Compliance**: Ensures adherence to regulatory requirements by embedding verifiable metadata.
-* **Provenance**: Tracks the origins and development of ML artifacts, aiding in reproducibility and trust.
-* **Incident Response**: Provides a mechanism to trace and remediate compromised models or datasets.
 
 
 ## **OMS Specification**
