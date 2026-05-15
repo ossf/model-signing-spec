@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://model_signing/envelope/v1.0/schema",
+  "title": "DSSE Envelope (OMS profile)",
+  "description": "Lightweight JSON Schema for a DSSE envelope as used by OMS bundles. The canonical DSSE specification is at https://github.com/secure-systems-lab/dsse/blob/master/envelope.md — this schema captures the structural requirements without redefining the protocol semantics.",
+  "type": "object",
+  "required": ["payload", "payloadType", "signatures"],
+  "properties": {
+    "payload": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Base64-encoded in-toto Statement. Decoded contents must conform to statement.schema.json."
+    },
+    "payloadType": {
+      "type": "string",
+      "const": "application/vnd.in-toto+json",
+      "description": "DSSE payload type. Fixed to the in-toto media type per the in-toto envelope spec."
+    },
+    "signatures": {
+      "type": "array",
+      "minItems": 1,
+      "description": "At least one DSSE signature.",
+      "items": {
+        "$ref": "#/$defs/signature"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "signature": {
+      "type": "object",
+      "required": ["sig"],
+      "properties": {
+        "sig": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Base64-encoded signature."
+        },
+        "keyid": {
+          "type": ["string", "null"],
+          "description": "Optional key identifier per DSSE spec. Producers MAY omit this field entirely. Verifiers MUST accept absent, empty string, or null. OMS does not use this field for verification."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

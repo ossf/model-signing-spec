@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://model_signing/predicate/v1.0/schema",
+  "title": "OMS Predicate v1.0",
+  "description": "JSON Schema for the OMS predicate body within an in-toto Statement v1. This schema defines only the model-signing-specific predicate; the enclosing in-toto Statement and Sigstore Bundle are governed by their respective specifications.",
+  "type": "object",
+  "required": ["resources", "serialization"],
+  "additionalProperties": false,
+  "properties": {
+    "resources": {
+      "type": "array",
+      "description": "File manifest. Each entry describes one file or byte range in the signing scope, per in-toto Resource Descriptor.",
+      "items": {
+        "$ref": "#/$defs/resource_descriptor"
+      }
+    },
+    "serialization": {
+      "$ref": "#/$defs/serialization"
+    }
+  },
+  "$defs": {
+    "resource_descriptor": {
+      "type": "object",
+      "description": "A single file or byte-range entry in the model manifest.",
+      "required": ["name", "digest", "algorithm"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "For 'files' method: relative POSIX path from the model root. For 'shards' method: 'path:start:end' where start is the inclusive byte offset and end is the exclusive byte offset."
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]+$",
+          "description": "Hex-encoded hash of the file or byte-range contents."
+        },
+        "algorithm": {
+          "type": "string",
+          "enum": ["sha256", "blake2b", "blake3"],
+          "description": "Hash algorithm used to compute the digest."
+        }
+      },
+      "additionalProperties": true
+    },
+    "serialization": {
+      "type": "object",
+      "description": "Canonicalization metadata recording how files were enumerated and hashed.",
+      "required": ["method", "hash_type", "allow_symlinks"],
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": ["files", "shards"],
+          "description": "Serialization method. 'files' hashes each file as a whole. 'shards' divides files into fixed-size byte ranges."
+        },
+        "hash_type": {
+          "type": "string",
+          "enum": ["sha256", "blake2b", "blake3"],
+          "description": "Hash algorithm used for all resource digests."
+        },
+        "shard_size": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "description": "Shard size in bytes. Required when method is 'shards', must be absent when method is 'files'."
+        },
+        "allow_symlinks": {
+          "type": "boolean",
+          "description": "Whether symbolic links were followed during file enumeration. Support for true is expected to be removed in a future version."
+        },
+        "ignore_paths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Paths excluded from the signing scope."
+        }
+      },
+      "if": {
+        "properties": { "method": { "const": "shards" } }
+      },
+      "then": {
+        "required": ["method", "hash_type", "allow_symlinks", "shard_size"]
+      },
+      "additionalProperties": false
+    }
+  }
+}

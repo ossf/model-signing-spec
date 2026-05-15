@@ -1,0 +1,202 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://model_signing/bundle/v1.0/schema",
+  "title": "OMS Bundle",
+  "description": "JSON Schema for a complete OMS bundle file (current format, v1.1.0+). An OMS bundle is a Sigstore Bundle containing a DSSE envelope with an OMS in-toto Statement.\n\nThis schema validates the CURRENT normative format. Older bundle versions (pre-v1.1.0) may not pass this schema; see spec/v1.0.md §11 for version history and verifier relaxations.\n\nFields owned by Sigstore (verificationMaterial internals, tlogEntries, timestampVerificationData) are structurally validated here but their semantics are governed by:\n  - Sigstore Bundle:     https://github.com/sigstore/protobuf-specs/blob/main/protos/sigstore_bundle.proto\n  - Sigstore Common:     https://github.com/sigstore/protobuf-specs/blob/main/protos/sigstore_common.proto\n  - Sigstore Rekor:      https://github.com/sigstore/protobuf-specs/blob/main/protos/sigstore_rekor.proto",
+  "type": "object",
+  "required": ["mediaType", "verificationMaterial", "dsseEnvelope"],
+  "properties": {
+    "mediaType": {
+      "type": "string",
+      "pattern": "^application/vnd\\.dev\\.sigstore\\.bundle",
+      "description": "Sigstore bundle media type. Versioning is governed by the Sigstore bundle spec (sigstore_bundle.proto)."
+    },
+    "verificationMaterial": {
+      "$ref": "#/$defs/verification_material"
+    },
+    "dsseEnvelope": {
+      "$ref": "https://model_signing/envelope/v1.0/schema"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "verification_material": {
+      "type": "object",
+      "description": "Sigstore VerificationMaterial. Structure is defined by sigstore_bundle.proto#VerificationMaterial. Contents depend on the signing method (key, certificate, or sigstore). See spec/v1.0.md §4.1.",
+      "anyOf": [
+        {
+          "description": "Key-based signing: publicKey required. No Sigstore infrastructure involved, so tlogEntries and timestampVerificationData are not expected. Per sigstore_common.proto#PublicKeyIdentifier.",
+          "required": ["publicKey"],
+          "properties": {
+            "publicKey": { "$ref": "#/$defs/public_key_identifier" },
+            "tlogEntries": { "$ref": "#/$defs/tlog_entries" },
+            "timestampVerificationData": { "$ref": "#/$defs/timestamp_verification_data" }
+          }
+        },
+        {
+          "description": "Certificate-based signing: x509CertificateChain required. No Sigstore infrastructure involved, so tlogEntries and timestampVerificationData are not expected. Per sigstore_common.proto#X509CertificateChain.",
+          "required": ["x509CertificateChain"],
+          "properties": {
+            "x509CertificateChain": { "$ref": "#/$defs/x509_certificate_chain" },
+            "tlogEntries": { "$ref": "#/$defs/tlog_entries" },
+            "timestampVerificationData": { "$ref": "#/$defs/timestamp_verification_data" }
+          }
+        },
+        {
+          "description": "Sigstore keyless: short-lived Fulcio certificate + transparency log + optional RFC 3161 timestamps. tlogEntries is required (at least one entry). Per sigstore_common.proto#X509Certificate and sigstore_rekor.proto#TransparencyLogEntry.",
+          "required": ["certificate", "tlogEntries"],
+          "properties": {
+            "certificate": { "$ref": "#/$defs/x509_certificate" },
+            "tlogEntries": { "$ref": "#/$defs/tlog_entries" },
+            "timestampVerificationData": { "$ref": "#/$defs/timestamp_verification_data" }
+          }
+        }
+      ]
+    },
+
+    "public_key_identifier": {
+      "type": "object",
+      "description": "Per sigstore_common.proto#PublicKeyIdentifier. Current bundles use 'hint'; older bundle versions used 'rawBytes'.",
+      "anyOf": [
+        { "required": ["hint"] },
+        { "required": ["rawBytes"] }
+      ],
+      "properties": {
+        "hint": {
+          "type": "string",
+          "description": "Key identifier hint (e.g., hex-encoded key fingerprint)."
+        },
+        "rawBytes": {
+          "type": "string",
+          "description": "Base64-encoded public key bytes (older bundle versions)."
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "x509_certificate": {
+      "type": "object",
+      "description": "Per sigstore_common.proto#X509Certificate.",
+      "required": ["rawBytes"],
+      "properties": {
+        "rawBytes": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Base64-encoded DER certificate."
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "x509_certificate_chain": {
+      "type": "object",
+      "description": "Per sigstore_common.proto#X509CertificateChain.",
+      "required": ["certificates"],
+      "properties": {
+        "certificates": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/x509_certificate" }
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "tlog_entries": {
+      "type": "array",
+      "description": "Transparency log entries. Per sigstore_rekor.proto#TransparencyLogEntry. Required only for the sigstore method (MUST contain at least one entry). For key/certificate methods this field is not expected and MAY be absent entirely. Semantics and verification logic are defined by Sigstore, not OMS.",
+      "items": {
+        "$ref": "#/$defs/transparency_log_entry"
+      }
+    },
+
+    "transparency_log_entry": {
+      "type": "object",
+      "description": "A single Rekor transparency log entry. Per sigstore_rekor.proto#TransparencyLogEntry. OMS validates structural presence of fields; their verification semantics are governed by Sigstore.",
+      "properties": {
+        "logIndex": {
+          "type": "string",
+          "description": "Global log index."
+        },
+        "logId": {
+          "type": "object",
+          "description": "Per sigstore_rekor.proto#LogId.",
+          "properties": {
+            "keyId": { "type": "string" }
+          },
+          "additionalProperties": true
+        },
+        "kindVersion": {
+          "type": "object",
+          "description": "Per sigstore_rekor.proto#KindVersion.",
+          "properties": {
+            "kind": { "type": "string" },
+            "version": { "type": "string" }
+          },
+          "additionalProperties": true
+        },
+        "integratedTime": {
+          "type": "string",
+          "description": "Unix timestamp when the entry was integrated into the log."
+        },
+        "inclusionPromise": {
+          "type": "object",
+          "description": "Per sigstore_rekor.proto#InclusionPromise.",
+          "properties": {
+            "signedEntryTimestamp": { "type": "string" }
+          },
+          "additionalProperties": true
+        },
+        "inclusionProof": {
+          "type": "object",
+          "description": "Per sigstore_rekor.proto#InclusionProof.",
+          "properties": {
+            "logIndex": { "type": "string" },
+            "rootHash": { "type": "string" },
+            "treeSize": { "type": "string" },
+            "hashes": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "checkpoint": {
+              "type": "object",
+              "description": "Per sigstore_rekor.proto#Checkpoint.",
+              "properties": {
+                "envelope": { "type": "string" }
+              },
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": true
+        },
+        "canonicalizedBody": {
+          "type": "string",
+          "description": "Base64-encoded canonical Rekor entry body."
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "timestamp_verification_data": {
+      "type": "object",
+      "description": "Per sigstore_bundle.proto#TimestampVerificationData. Contains RFC 3161 signed timestamps.",
+      "properties": {
+        "rfc3161Timestamps": {
+          "type": "array",
+          "description": "Per sigstore_common.proto#RFC3161SignedTimestamp.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "signedTimestamp": {
+                "type": "string",
+                "description": "Base64-encoded RFC 3161 timestamp token."
+              }
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

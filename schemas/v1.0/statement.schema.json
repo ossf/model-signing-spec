@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://model_signing/statement/v1.0/schema",
+  "title": "OMS in-toto Statement",
+  "description": "JSON Schema for an in-toto Statement v1 carrying an OMS predicate. The statement structure follows https://github.com/in-toto/attestation/blob/main/spec/v1/statement.md — this schema adds the OMS-specific predicateType constraint and references the OMS predicate schema.",
+  "type": "object",
+  "required": ["_type", "subject", "predicateType", "predicate"],
+  "properties": {
+    "_type": {
+      "type": "string",
+      "const": "https://in-toto.io/Statement/v1",
+      "description": "in-toto Statement type URI (fixed by the in-toto spec)."
+    },
+    "subject": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "description": "Subjects of the statement. For OMS, exactly one entry representing the model.",
+      "items": {
+        "$ref": "#/$defs/subject"
+      }
+    },
+    "predicateType": {
+      "type": "string",
+      "const": "https://model_signing/signature/v1.0",
+      "description": "OMS predicate type URI. This is the value that distinguishes an OMS statement from other in-toto predicates."
+    },
+    "predicate": {
+      "$ref": "https://model_signing/predicate/v1.0/schema",
+      "description": "The OMS predicate body containing the file manifest and serialization metadata."
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "subject": {
+      "type": "object",
+      "description": "An in-toto subject entry (https://github.com/in-toto/attestation/blob/main/spec/v1/statement.md#subject).",
+      "required": ["name", "digest"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable identifier for the model."
+        },
+        "digest": {
+          "$ref": "#/$defs/digest_set",
+          "description": "Digest of the model root."
+        }
+      },
+      "additionalProperties": true
+    },
+    "digest_set": {
+      "type": "object",
+      "description": "A set of digests keyed by algorithm name (in-toto DigestSet).",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[0-9a-f]+$"
+      }
+    }
+  }
+}

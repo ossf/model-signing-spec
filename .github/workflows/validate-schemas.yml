@@ -1,0 +1,45 @@
+# Copyright 2024 The OpenSSF Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Validate Schemas
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "schemas/**"
+      - "test-vectors/**"
+  pull_request:
+    paths:
+      - "schemas/**"
+      - "test-vectors/**"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate test vectors against schemas
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          enable-cache: true
+
+      - name: Run schema validation
+        run: uv run ./test-vectors/validate.sh

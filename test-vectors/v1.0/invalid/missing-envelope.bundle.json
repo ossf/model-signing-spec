@@ -1,0 +1,9 @@
+{
+    "mediaType": "application/vnd.dev.sigstore.bundle.v0.3+json",
+    "verificationMaterial": {
+        "publicKey": {
+            "hint": "e8450dec4eb99dae995da9af1bc2cc9f76ed669ee2e744f57abba763df3e3f8e"
+        },
+        "tlogEntries": []
+    }
+}
