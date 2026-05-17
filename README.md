@@ -88,7 +88,7 @@ Model signing is critical for:
 OMS is designed to handle the complexity of modern AI systems, supporting any type of model format and models of any size. Instead of treating each file independently, OMS uses a detached OMS Signature Format that can represent multiple related artifacts—such as model weights, configuration files, tokenizers, and datasets—in a single, verifiable unit.
 
 The OMS Signature Format includes:
-* A list of all files in the bundle, each referenced by its cryptographic hash (e.g., SHA256)
+* A manifest listing model artifact files, each referenced by its cryptographic hash (e.g., SHA256)
 * An optional annotations section for custom, domain-specific fields (future support coming)
 * A digital signature that covers the entire manifest, ensuring tamper-evidence.
 
@@ -109,6 +109,18 @@ The OMS files are detached Sigstore bundles containing:
    * Signature: Cryptographically signs the in-toto statement for tamper-proofing.
 * Signature Verification Material
    * Includes information needed to verify the signature, such as certificate chains
+
+### Handling Multiple Attestations
+
+The OMS manifest includes cryptographic hashes of model artifacts (such as model weights, configuration files, tokenizers, and datasets), but does not include hashes of attestation files. Attestation files include:
+* SLSA provenance bundles
+* Software Bills of Materials (SBOMs)
+* Other OMS signature files
+* Any other attestation bundles
+
+This separation allows attestations to remain independent and individually signed. New attestations can be added throughout a model's lifecycle without invalidating previous signatures. Each attestation maintains its own cryptographic integrity while referencing the same underlying model artifacts.
+
+Downstream consumers can use policy mechanisms to require that specific attestations be present alongside model artifacts, without those attestations needing to be part of the OMS signature manifest itself.
 
 ### PKI Support
 
