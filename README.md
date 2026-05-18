@@ -27,7 +27,7 @@ As AI adoption continues to accelerate, so does the need to secure the AI supply
 
 In collaboration with industry partners, the Open Source Security Foundation (OpenSSF)’s AI/ML Working Group has introduced OpenSSF Model Signing (OMS): a flexible and implementation-agnostic standard and tooling for model signing, purpose-built for the unique requirements of AI workflows.
 
-The OMS specification defines a detached signature file that is typically distributed within the model folder. OMS is PKI-agnostic and supports signing with bare keys, PKI certificate chains, or identity-based keyless signing with Sigstore.
+The OMS specification defines a detached signature file that is typically distributed within the model folder as one line in a `claims.jsonl` file. OMS is PKI-agnostic and supports signing with bare keys, PKI certificate chains, or identity-based keyless signing with Sigstore.
 
 ### Objective and Scope
 
@@ -88,11 +88,11 @@ Model signing is critical for:
 OMS is designed to handle the complexity of modern AI systems, supporting any type of model format and models of any size. Instead of treating each file independently, OMS uses a detached OMS Signature Format that can represent multiple related artifacts—such as model weights, configuration files, tokenizers, and datasets—in a single, verifiable unit.
 
 The OMS Signature Format includes:
-* A list of all files in the bundle, each referenced by its cryptographic hash (e.g., SHA256)
+* A manifest listing model artifact files, each referenced by its cryptographic hash (e.g., SHA256)
 * An optional annotations section for custom, domain-specific fields (future support coming)
 * A digital signature that covers the entire manifest, ensuring tamper-evidence.
 
-The OMS Signature File follows the Sigstore Bundle Format, ensuring maximum compatibility with existing Sigstore (a graduated OpenSSF project) ecosystem tooling.  This detached format allows verification without modifying or repackaging the original content, making it easier to integrate into existing workflows and distribution systems.
+Each OMS signature follows the Sigstore Bundle Format, ensuring maximum compatibility with existing Sigstore (a graduated OpenSSF project) ecosystem tooling. This detached format allows verification without modifying or repackaging the original content, making it easier to integrate into existing workflows and distribution systems.
 
 
 
@@ -100,7 +100,7 @@ The OMS Signature File follows the Sigstore Bundle Format, ensuring maximum comp
 
 ![OMS Bundle Structure](./img-oms-bundle-structure.png)
 
-The OMS files are detached Sigstore bundles containing:
+An OMS signature is a detached Sigstore bundle containing:
 
 * DSSE Envelope
    * In-Toto Statements
@@ -109,6 +109,24 @@ The OMS files are detached Sigstore bundles containing:
    * Signature: Cryptographically signs the in-toto statement for tamper-proofing.
 * Signature Verification Material
    * Includes information needed to verify the signature, such as certificate chains
+
+### Handling Multiple Attestations
+
+The OMS manifest includes cryptographic hashes of model artifacts (such as model weights, configuration files, tokenizers, and datasets), but does not include hashes of attestation files. Attestation files include:
+* SLSA provenance bundles
+* Software Bills of Materials (SBOMs)
+* Other OMS signature files
+* Any other attestation bundles
+
+This separation allows attestations to remain independent and individually signed. New attestations can be added throughout a model's lifecycle without invalidating previous signatures. Each attestation maintains its own cryptographic integrity while referencing the same underlying model artifacts.
+
+Downstream consumers can use policy mechanisms to require that specific attestations be present alongside model artifacts, without those attestations needing to be part of the OMS signature manifest itself.
+
+#### Unified Bundle Layout
+
+OMS uses a unified bundle layout with a `claims.jsonl` file to accumulate attestations throughout a model's lifecycle. This file uses JSON Lines format, where each line contains a complete Sigstore bundle with an in-toto statement. Each statement includes the model's root hash and can have various predicates (model signature, SBOM, SLSA provenance, test results, etc.).
+
+As models move through different stages—from origin to public registries to enterprise environments—new attestations can be appended to the `claims.jsonl` file. This append-only approach preserves the complete history of attestations while allowing each stage to add its own verifiable claims without invalidating previous signatures.
 
 ### PKI Support
 
