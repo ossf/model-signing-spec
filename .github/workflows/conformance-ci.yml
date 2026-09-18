@@ -32,35 +32,6 @@ jobs:
       - name: Install model-signing (Python reference implementation)
         run: pip install model-signing
 
-      - name: Install cosign
-        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
-
-      - name: Install oras
-        uses: oras-project/setup-oras@5c0b487ce3fe0ce3ab0d034e63669e426e294e4d # v1.2.2
-
-      - name: Download and verify test fixtures
-        run: |
-          pip install -q pyyaml
-          FIXTURES=$(python3 -c "
-          import yaml
-          f = yaml.safe_load(open('conformance/config/fixtures.yaml'))
-          c = f.get('cosign', {})
-          print(f['image'], f['digest'], c.get('certificate_identity',''), c.get('certificate_oidc_issuer',''))
-          ")
-          # Note: read splits on whitespace; YAML values must not contain spaces
-          read -r IMAGE DIGEST IDENTITY ISSUER <<< "$FIXTURES"
-          IMAGE_REF="${IMAGE}@${DIGEST}"
-          echo "Verifying cosign signature for ${IMAGE_REF}..."
-          cosign verify \
-            --certificate-identity "${IDENTITY}" \
-            --certificate-oidc-issuer "${ISSUER}" \
-            "${IMAGE_REF}"
-          echo "Pulling fixtures..."
-          oras pull "${IMAGE_REF}" --output /tmp/fixtures
-          tar xzf /tmp/fixtures/*.tar.gz -C conformance/test/test-cases/verify/
-          echo "Fixtures extracted:"
-          find conformance/test/test-cases/verify -name bundle.sig | wc -l
-
       - name: Make selftest-client executable
         run: chmod +x conformance/selftest-client
 

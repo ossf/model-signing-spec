@@ -423,60 +423,73 @@ def generate_all_bundles(
         e["bundle_source"]["type"], 99,
     ))
 
-    # Process each entry
+    # Process each entry — catch per-entry errors so one failure (e.g. a
+    # client that correctly rejects expired certs) doesn't prevent generation
+    # of independent bundles like copy/mutate/handcraft.
+    failed: list[str] = []
     for entry in entries:
         source = entry["bundle_source"]
         test_dir = entry["test_dir"]
         dest = test_cases_dir / test_dir / "bundle.sig"
         source_type = source["type"]
 
-        if source_type == "sign":
-            logger.info("Signing bundle for %s ...", test_dir)
-            _generate_sign_bundle(
-                dest, entry, source,
-                assets_dir, roundtrip_method_defaults, entrypoint,
-                key_roles=key_roles,
-            )
-
-        elif source_type == "copy":
-            src_bundle = _resolve_source_bundle(source, test_dir_lookup, test_cases_dir)
-            _copy_bundle(src_bundle, dest)
-
-        elif source_type == "mutate":
-            src_bundle = _resolve_source_bundle(source, test_dir_lookup, test_cases_dir)
-            mutation_name = source["mutation"]
-            if mutation_name not in mutations:
-                raise ValueError(
-                    f"Unknown mutation {mutation_name!r} for {test_dir}. "
-                    f"Available: {sorted(mutations.keys())}"
+        try:
+            if source_type == "sign":
+                logger.info("Signing bundle for %s ...", test_dir)
+                _generate_sign_bundle(
+                    dest, entry, source,
+                    assets_dir, roundtrip_method_defaults, entrypoint,
+                    key_roles=key_roles,
                 )
-            _mutate_bundle(src_bundle, dest, mutations[mutation_name])
 
-        elif source_type == "handcraft":
-            variant = source["variant"]
-            if variant not in handcrafts:
-                raise ValueError(
-                    f"Unknown handcraft variant {variant!r} for {test_dir}. "
-                    f"Available: {sorted(handcrafts.keys())}"
-                )
-            source_bundle = None
-            source_test = source.get("source_test")
-            if source_test:
-                source_bundle = _resolve_source_bundle(
-                    source, test_dir_lookup, test_cases_dir,
-                )
-            # Also check source_test_dir for backward compatibility
-            if source_bundle is None and source.get("source_test_dir"):
-                source_bundle = _resolve_source_bundle(
-                    source, test_dir_lookup, test_cases_dir,
-                )
-            _apply_handcraft(dest, handcrafts[variant], source_bundle=source_bundle)
+            elif source_type == "copy":
+                src_bundle = _resolve_source_bundle(source, test_dir_lookup, test_cases_dir)
+                _copy_bundle(src_bundle, dest)
 
-        else:
-            logger.warning(
-                "Unknown bundle_source type %r for %s -- skipping",
-                source_type, test_dir,
-            )
+            elif source_type == "mutate":
+                src_bundle = _resolve_source_bundle(source, test_dir_lookup, test_cases_dir)
+                mutation_name = source["mutation"]
+                if mutation_name not in mutations:
+                    raise ValueError(
+                        f"Unknown mutation {mutation_name!r} for {test_dir}. "
+                        f"Available: {sorted(mutations.keys())}"
+                    )
+                _mutate_bundle(src_bundle, dest, mutations[mutation_name])
+
+            elif source_type == "handcraft":
+                variant = source["variant"]
+                if variant not in handcrafts:
+                    raise ValueError(
+                        f"Unknown handcraft variant {variant!r} for {test_dir}. "
+                        f"Available: {sorted(handcrafts.keys())}"
+                    )
+                source_bundle = None
+                source_test = source.get("source_test")
+                if source_test:
+                    source_bundle = _resolve_source_bundle(
+                        source, test_dir_lookup, test_cases_dir,
+                    )
+                # Also check source_test_dir for backward compatibility
+                if source_bundle is None and source.get("source_test_dir"):
+                    source_bundle = _resolve_source_bundle(
+                        source, test_dir_lookup, test_cases_dir,
+                    )
+                _apply_handcraft(dest, handcrafts[variant], source_bundle=source_bundle)
+
+            else:
+                logger.warning(
+                    "Unknown bundle_source type %r for %s -- skipping",
+                    source_type, test_dir,
+                )
+        except Exception:
+            failed.append(test_dir)
+            logger.warning("Failed to generate bundle for %s", test_dir, exc_info=True)
+
+    if failed:
+        logger.warning(
+            "Bundle generation failed for %d entries: %s",
+            len(failed), ", ".join(failed),
+        )
 
     logger.info("Bundle generation complete.")
 

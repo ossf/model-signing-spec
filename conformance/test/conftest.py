@@ -147,9 +147,13 @@ def generate_test_assets(request: pytest.FixtureRequest) -> None:
 
     entrypoint: str | None = request.config.getoption("--entrypoint")
     test_cases_verify = TEST_CASES / "verify"
-    bundles_missing = not (
+    positive_present = (
         test_cases_verify / "positive" / "key-simple" / "bundle.sig"
     ).exists()
+    negative_present = (
+        test_cases_verify / "negative" / "key-simple-wrong-key_fail" / "bundle.sig"
+    ).exists()
+    bundles_missing = not (positive_present and negative_present)
 
     generation_ok = True
     if bundles_missing and entrypoint is not None:
