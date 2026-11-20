@@ -110,6 +110,10 @@ The OMS files are detached Sigstore bundles containing:
 * Signature Verification Material
    * Includes information needed to verify the signature, such as certificate chains
 
+### Closure Predicate (Draft)
+
+A loader can fetch files from outside the model directory at load time, such as custom code from another repository or a base model's configuration. The OMS signature does not cover these files. The optional [closure predicate](spec/closure/v0.1.md) allows a producer declare these files in a separate signed statement, which is bound to the model's manifest, so that a consumer can check each file when the loader fetches it. This does not change the OMS predicate.
+
 ### PKI Support
 
 The model signing approach is PKI-agnostic and supports the following methods:

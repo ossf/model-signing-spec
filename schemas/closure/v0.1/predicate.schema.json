@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://model_signing/closure/predicate/v0.1/schema",
+  "title": "OMS Closure Predicate v0.1 (Draft)",
+  "description": "JSON Schema for the optional closure predicate body (spec/closure/v0.1.md). Unknown fields are ignored per the in-toto parsing rules. Rules a schema cannot express, such as unique URIs and unique resource names, are in Section 3 of the spec.",
+  "type": "object",
+  "required": ["dependencies"],
+  "properties": {
+    "dependencies": {
+      "type": "array",
+      "description": "The model's whole closure is flattened. An empty array declares that the loader fetches nothing from outside the model directory.",
+      "items": {
+        "$ref": "#/$defs/dependency"
+      }
+    }
+  },
+  "$defs": {
+    "dependency": {
+      "type": "object",
+      "required": ["uri", "kind", "resources"],
+      "properties": {
+        "uri": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The source from which the loader fetches the dependency. Compared byte for byte."
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["code", "model", "kernel"],
+          "description": "What the loader does with the dependency."
+        },
+        "resources": {
+          "type": "array",
+          "minItems": 1,
+          "description": "Files of the dependency, one whole file resource descriptor each.",
+          "items": {
+            "$ref": "https://model_signing/predicate/v1.0/schema#/$defs/resource_descriptor"
+          }
+        },
+        "claimed_signer": {
+          "$ref": "#/$defs/claimed_signer"
+        }
+      }
+    },
+    "claimed_signer": {
+      "type": "object",
+      "description": "The identity the producer expects to have signed the dependency. An assertion, not a trust root.",
+      "required": ["method"],
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": ["key", "certificate", "sigstore"]
+        },
+        "public_key_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Key: SHA-256 of the DER-encoded SubjectPublicKeyInfo, lowercase hex."
+        },
+        "root_certificate_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "Certificate: SHA-256 of the DER-encoded root certificate, lowercase hex."
+        },
+        "identity": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Sigstore: Subject Alternative Name of the signing certificate."
+        },
+        "issuer": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Sigstore: OIDC issuer recorded in the signing certificate."
+        }
+      },
+      "allOf": [
+        {
+          "if": { "required": ["method"], "properties": { "method": { "const": "key" } } },
+          "then": { "required": ["public_key_sha256"] }
+        },
+        {
+          "if": { "required": ["method"], "properties": { "method": { "const": "certificate" } } },
+          "then": { "required": ["root_certificate_sha256"] }
+        },
+        {
+          "if": { "required": ["method"], "properties": { "method": { "const": "sigstore" } } },
+          "then": { "required": ["identity", "issuer"] }
+        }
+      ]
+    }
+  }
+}

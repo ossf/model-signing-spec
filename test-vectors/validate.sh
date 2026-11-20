@@ -23,6 +23,8 @@
 #       valid/            — MUST pass validation
 #       invalid/          — MUST be rejected (bundle-level schema failure)
 #       invalid-payload/  — MUST be rejected (statement-level schema failure)
+#     closure/v0.1/       — closure predicate statements and checks, run by
+#                           closure/v0.1/check.py (spec/closure/v0.1.md)
 
 set -euo pipefail
 
@@ -81,6 +83,15 @@ for version_dir in "$SCRIPT_DIR"/v*/; do
 
   echo ""
 done
+
+echo "=== closure/v0.1 ==="
+if python "$SCRIPT_DIR/closure/v0.1/check.py"; then
+  passed=$((passed + 1))
+else
+  echo "  FAIL  closure/v0.1/check.py"
+  failed=$((failed + 1))
+fi
+echo ""
 
 echo "$passed passed, $failed failed"
 

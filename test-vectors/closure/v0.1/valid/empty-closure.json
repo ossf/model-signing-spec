@@ -1,0 +1,15 @@
+{
+  "_type": "https://in-toto.io/Statement/v1",
+  "subject": [
+    {
+      "name": "model",
+      "digest": {
+        "omsManifest": "d3727d5bab9fc8d44382f50d811d07670007926d6871d5e0671e8046bf6d5705"
+      }
+    }
+  ],
+  "predicateType": "https://model_signing/closure/v0.1",
+  "predicate": {
+    "dependencies": []
+  }
+}

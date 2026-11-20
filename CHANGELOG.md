@@ -20,6 +20,16 @@ file.  The format follows
 
 Schema versions use [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- Closure predicate v0.1, Draft (`spec/closure/v0.1.md`): an optional,
+  separate in-toto predicate that declares the files a loader fetches
+  from outside the model directory, bound to the model by a manifest
+  digest that covers file names. It does not change the OMS predicate.
+- Closure schemas (`schemas/closure/v0.1/`), test vectors and a checker
+  (`test-vectors/closure/v0.1/`), run by `test-vectors/validate.sh`.
+
 ## [1.0.0]
 
 ### Added
