@@ -1,0 +1,27 @@
+{
+  "_type": "https://in-toto.io/Statement/v1",
+  "subject": [
+    {
+      "name": "model",
+      "digest": {
+        "sha256": "2ef7bea6d22866cf790ad9078d0b6fb9c3ddc962aef9d62cc700644c55303215"
+      }
+    }
+  ],
+  "predicateType": "https://model_signing/closure/v0.1",
+  "predicate": {
+    "dependencies": [
+      {
+        "uri": "https://huggingface.co/example-org/base-encoder",
+        "kind": "model",
+        "resources": [
+          {
+            "name": "config.json",
+            "algorithm": "sha256",
+            "digest": "3bce584347100ee3296036135fb3022fee2a387a08e9a5a36cdf2db96e21984a"
+          }
+        ]
+      }
+    ]
+  }
+}

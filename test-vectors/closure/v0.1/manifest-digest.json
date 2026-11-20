@@ -1,0 +1,109 @@
+{
+  "description": "Manifest digest (spec/closure/v0.1.md Section 4). Each case gives OMS resource descriptors and the expected omsManifest value, or the expected error. Where present, oms_root_sha256 is the OMS root digest of the same resources (spec/v1.0.md Section 6.5.1).",
+  "cases": [
+    {
+      "id": "single-file",
+      "resources": [
+        {
+          "name": "model.safetensors",
+          "algorithm": "sha256",
+          "digest": "2b68115c5606ef9a5aa8aa1ab9c3f67ed65a69d60a8c51a519021df8e5af9cb3"
+        }
+      ],
+      "omsManifest": "d3727d5bab9fc8d44382f50d811d07670007926d6871d5e0671e8046bf6d5705"
+    },
+    {
+      "id": "layout-a",
+      "resources": [
+        {
+          "name": "config.json",
+          "algorithm": "sha256",
+          "digest": "df46af5b82e79b7685b0e64fce00f1dafd4c292b6655251315c110070966190d"
+        },
+        {
+          "name": "extra.json",
+          "algorithm": "sha256",
+          "digest": "04c333a9548f673cb72d094e0201a8d7ab5b0e518e8d055513e99c40165b040a"
+        }
+      ],
+      "omsManifest": "0eda4ca6013c2bda4e02bd8e3260fc6e54c7e48edcc13736f209c5f3a030d273",
+      "oms_root_sha256": "2ef7bea6d22866cf790ad9078d0b6fb9c3ddc962aef9d62cc700644c55303215"
+    },
+    {
+      "id": "layout-b-same-bytes-renamed",
+      "resources": [
+        {
+          "name": "aaa.json",
+          "algorithm": "sha256",
+          "digest": "df46af5b82e79b7685b0e64fce00f1dafd4c292b6655251315c110070966190d"
+        },
+        {
+          "name": "config.json",
+          "algorithm": "sha256",
+          "digest": "04c333a9548f673cb72d094e0201a8d7ab5b0e518e8d055513e99c40165b040a"
+        }
+      ],
+      "omsManifest": "7dca33f213303091e47ad697a85e6ccc2f7c5efd6b1cde947018316f2be64c06",
+      "oms_root_sha256": "2ef7bea6d22866cf790ad9078d0b6fb9c3ddc962aef9d62cc700644c55303215"
+    },
+    {
+      "id": "unsorted-input",
+      "resources": [
+        {
+          "name": "extra.json",
+          "algorithm": "sha256",
+          "digest": "04c333a9548f673cb72d094e0201a8d7ab5b0e518e8d055513e99c40165b040a"
+        },
+        {
+          "name": "config.json",
+          "algorithm": "sha256",
+          "digest": "df46af5b82e79b7685b0e64fce00f1dafd4c292b6655251315c110070966190d"
+        }
+      ],
+      "omsManifest": "0eda4ca6013c2bda4e02bd8e3260fc6e54c7e48edcc13736f209c5f3a030d273"
+    },
+    {
+      "id": "code-point-order",
+      "resources": [
+        {
+          "name": "\ud83d\ude00.txt",
+          "algorithm": "sha256",
+          "digest": "0263829989b6fd954f72baaf2fc64bc2e2f01d692d4de72986ea808f6e99813f"
+        },
+        {
+          "name": "\uff5e.txt",
+          "algorithm": "sha256",
+          "digest": "87428fc522803d31065e7bce3cf03fe475096631e5e07bbd7a0fde60c4cf25c7"
+        }
+      ],
+      "omsManifest": "3c13e9c003205a79c836cef5ad116d7c0e10a38a0a2356689a1618abfc700884"
+    },
+    {
+      "id": "blake2b-digest",
+      "resources": [
+        {
+          "name": "weights.bin",
+          "algorithm": "blake2b",
+          "digest": "38c3ed49796a223272095feabfba55d56ecc124fd51e45d40d8be938e920de068d918730105ca23d619c873baf43be353cede08d130b4c84e0beb4b1ab988609"
+        }
+      ],
+      "omsManifest": "ef974793093780474c53d825178fd6ad75940464be822b2d2d376b4d1aa94b6f"
+    },
+    {
+      "id": "duplicate-name",
+      "resources": [
+        {
+          "name": "config.json",
+          "algorithm": "sha256",
+          "digest": "df46af5b82e79b7685b0e64fce00f1dafd4c292b6655251315c110070966190d"
+        },
+        {
+          "name": "config.json",
+          "algorithm": "sha256",
+          "digest": "04c333a9548f673cb72d094e0201a8d7ab5b0e518e8d055513e99c40165b040a"
+        }
+      ],
+      "error": "duplicate resource name"
+    }
+  ]
+}

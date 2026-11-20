@@ -1,0 +1,48 @@
+{
+  "_type": "https://in-toto.io/Statement/v1",
+  "subject": [
+    {
+      "name": "model",
+      "digest": {
+        "omsManifest": "0eda4ca6013c2bda4e02bd8e3260fc6e54c7e48edcc13736f209c5f3a030d273"
+      }
+    }
+  ],
+  "predicateType": "https://model_signing/closure/v0.1",
+  "predicate": {
+    "dependencies": [
+      {
+        "uri": "https://huggingface.co/example-org/base-encoder",
+        "kind": "model",
+        "resources": [
+          {
+            "name": "config.json",
+            "algorithm": "sha256",
+            "digest": "3bce584347100ee3296036135fb3022fee2a387a08e9a5a36cdf2db96e21984a"
+          }
+        ]
+      },
+      {
+        "uri": "https://huggingface.co/example-org/custom-layers",
+        "kind": "code",
+        "resources": [
+          {
+            "name": "configuration_example.py",
+            "algorithm": "sha256",
+            "digest": "2e3bfebb0371712a911dc18a90039e0df9bf4cdd28a414d285037d642b61da7c"
+          },
+          {
+            "name": "modeling_example.py",
+            "algorithm": "sha256",
+            "digest": "07981daf22907fb970e7ff6fb1aa0bfc9287d1a7eddedd1a58befa0301183006"
+          }
+        ],
+        "claimed_signer": {
+          "method": "sigstore",
+          "identity": "https://github.com/example-org/custom-layers/.github/workflows/release.yml@refs/heads/main",
+          "issuer": "https://token.actions.githubusercontent.com"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "description": "Fetch check (spec/closure/v0.1.md Section 6.3). Each case is one file the loader fetches: the dependency URI, the file's path in that dependency, and its content as UTF-8 text.",
+  "cases": [
+    {
+      "id": "declared-file",
+      "closure_statement": "valid/code-and-model.json",
+      "uri": "https://huggingface.co/example-org/custom-layers",
+      "path": "modeling_example.py",
+      "content": "from transformers import AutoConfig\n\nfrom .configuration_example import ExampleConfig\n\n\nclass ExampleModel:\n    config_class = ExampleConfig\n\n    def __init__(self, config):\n        self.encoder = AutoConfig.from_pretrained(\"example-org/base-encoder\")\n",
+      "expected": "match"
+    },
+    {
+      "id": "dependency-of-dependency",
+      "closure_statement": "valid/code-and-model.json",
+      "uri": "https://huggingface.co/example-org/base-encoder",
+      "path": "config.json",
+      "content": "{\"hidden_size\": 64}\n",
+      "expected": "match"
+    },
+    {
+      "id": "changed-file",
+      "closure_statement": "valid/code-and-model.json",
+      "uri": "https://huggingface.co/example-org/custom-layers",
+      "path": "modeling_example.py",
+      "content": "from transformers import AutoConfig\n\nfrom .configuration_example import ExampleConfig\n\n\nclass ExampleModel:\n    config_class = ExampleConfig\n\n    def __init__(self, config):\n        self.encoder = AutoConfig.from_pretrained(\"example-org/other-encoder\")\n",
+      "expected": "mismatch"
+    },
+    {
+      "id": "unlisted-file",
+      "closure_statement": "valid/code-and-model.json",
+      "uri": "https://huggingface.co/example-org/custom-layers",
+      "path": "utils_example.py",
+      "content": "def helper():\n    pass\n",
+      "expected": "undeclared"
+    },
+    {
+      "id": "same-bytes-other-source",
+      "closure_statement": "valid/code-and-model.json",
+      "uri": "https://huggingface.co/other-org/custom-layers",
+      "path": "modeling_example.py",
+      "content": "from transformers import AutoConfig\n\nfrom .configuration_example import ExampleConfig\n\n\nclass ExampleModel:\n    config_class = ExampleConfig\n\n    def __init__(self, config):\n        self.encoder = AutoConfig.from_pretrained(\"example-org/base-encoder\")\n",
+      "expected": "undeclared"
+    },
+    {
+      "id": "empty-closure",
+      "closure_statement": "valid/empty-closure.json",
+      "uri": "https://huggingface.co/example-org/base-encoder",
+      "path": "config.json",
+      "content": "{\"hidden_size\": 64}\n",
+      "expected": "undeclared"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "_type": "https://in-toto.io/Statement/v1",
+  "subject": [
+    {
+      "name": "model",
+      "digest": {
+        "omsManifest": "0eda4ca6013c2bda4e02bd8e3260fc6e54c7e48edcc13736f209c5f3a030d273"
+      }
+    }
+  ],
+  "predicateType": "https://model_signing/closure/v0.1",
+  "predicate": {
+    "dependencies": [
+      {
+        "uri": "https://huggingface.co/example-org/base-encoder",
+        "kind": "model"
+      }
+    ]
+  }
+}
